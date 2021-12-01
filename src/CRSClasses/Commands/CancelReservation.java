@@ -32,6 +32,8 @@ public class CancelReservation implements Command {
         Date current = new Date(System.currentTimeMillis());
         try {
             if (current.before(Res.getFrom())) {
+                System.out.println(Res.getCus().getCredit());
+                System.out.println(Res.getCost());
                 CarRentalDBMethods.cancelRes(c, Res);
                 oos.writeUTF("Reservation ID: " + Res.getRid() + " Canceled Successfully");
                 oos.flush();

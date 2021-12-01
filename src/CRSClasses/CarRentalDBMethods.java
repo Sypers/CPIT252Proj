@@ -401,8 +401,8 @@ public class CarRentalDBMethods {
             ps = c.prepareStatement("update reservation set status='Canceled' where id=?");
             ps.setString(1, res.getRid());
             ps.execute();            
-            ps = c.prepareStatement("update user set credit=? where id=?");
-            ps.setDouble(1, res.getCost() + res.getCus().getCredit());
+            ps = c.prepareStatement("update user set credit = credit + ? where id=?");
+            ps.setDouble(1, res.getCost());
             ps.setString(2, res.getCus().getId());
             ps.execute();            
         } catch (SQLException ex) {
