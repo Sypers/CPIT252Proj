@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 /**
  *
  * @author Administrator
+ * A Facade for the customer interface to handle operations on reservation objects
  */
 public class CustomerFacade {
 
@@ -29,20 +30,22 @@ public class CustomerFacade {
     public String handle(String type, Reservation res) {
         String result;
         try {
+            // For making a new reservation
             if (type.equalsIgnoreCase("MakeNew")) {
                 oos.writeObject(new MakeReservation(res));
                 oos.flush();
                 result = ois.readUTF();
                 return result;
+            // For Cancelling a customer reservation
             } else if (type.equalsIgnoreCase("Cancel")) {
                 oos.writeObject(new CancelReservation(res));
                 oos.flush();
                 result = ois.readUTF();
                         return result;
+            // For initiating handover from customer
             } else if (type.equalsIgnoreCase("handover")) {
-                double extra_cost = res.calcPenalty();
-                System.out.println(extra_cost);
-                if (extra_cost > 0) {
+                double extra_cost = res.calcPenalty(); // Calculate late penalty
+                if (extra_cost > 0) { // if there is a penalty cost
                     int choice = JOptionPane.showConfirmDialog(JOptionPane.getRootFrame(), "You are late on your car return, you will have to pay extra:" + extra_cost + "To resume handover.");
                     if (choice == JOptionPane.OK_OPTION) {
                         res.setAdditionalCost(extra_cost);
@@ -52,7 +55,7 @@ public class CustomerFacade {
                     } else {
                         return "Operation Cancelled";
                     }
-                } else {
+                } else { // if there is no penalty then send request immediatly
                     oos.writeObject(new Handover(res));
                     oos.flush();
                     return "Handover sent to admin";

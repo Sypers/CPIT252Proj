@@ -24,23 +24,24 @@ import javax.swing.table.DefaultTableModel;
  * @author Administrator
  */
 public class AdminForm extends javax.swing.JFrame implements RetrieveData {
+
     Admin admin;
     private Socket soc;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
     private ArrayList<Car> cars;
-    private ArrayList<Reservation> myRes;
-    private ArrayList<Reservation> myResHandOver;
+    private ArrayList<Reservation> myRes; // for active reservations
+    private ArrayList<Reservation> myResHandOver; // for reservations ready to be delivered
     private DefaultTableModel Tmodel;
     private DefaultTableModel Tmode2;
     private DefaultTableModel Tmode3;
-    
+
     public AdminForm() {
         initComponents();
     }
-    
+
     AdminForm(Admin admin) {
-          try {
+        try {
             initComponents();
             this.admin = admin;
             this.soc = new Socket("localhost", 2001);
@@ -210,26 +211,83 @@ public class AdminForm extends javax.swing.JFrame implements RetrieveData {
     private void RefereshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RefereshActionPerformed
         getData();
     }//GEN-LAST:event_RefereshActionPerformed
-
+    // Continue handover from admin side
     private void ConfirmDeliveryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ConfirmDeliveryActionPerformed
-        try{
-             oos.writeObject(new ConfirmDelivery(myResHandOver.get(jTable3.getSelectedRow()).cloneRes()));
-        }catch(Exception e){
-            Logger.getLogger("AdminLogger").log(Level.SEVERE,"Error in Confirm Delivery data\n",e.toString());
+        try {
+            oos.writeObject(new ConfirmDelivery(myResHandOver.get(jTable3.getSelectedRow()).cloneRes()));
+        } catch (Exception e) {
+            Logger.getLogger("AdminLogger").log(Level.SEVERE, "Error in Confirm Delivery data\n", e.toString());
         }
     }//GEN-LAST:event_ConfirmDeliveryActionPerformed
-
+    // Switch car availability to customers
     private void SwitchAvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SwitchAvaActionPerformed
-        try{
-        Car C = cars.get(jTable1.getSelectedRow());
-        oos.writeObject(new SwitchAvailablity(C));
-        oos.flush();
-        }catch(IOException ex){
-        Logger.getLogger("AdminLogger").log(Level.SEVERE,"Error in Switch Availability\n",ex.toString());
-
+        try {
+            Car C = cars.get(jTable1.getSelectedRow());
+            oos.writeObject(new SwitchAvailablity(C));
+            oos.flush();
+        } catch (IOException ex) {
+            Logger.getLogger("AdminLogger").log(Level.SEVERE, "Error in Switch Availability\n", ex.toString());
         }
     }//GEN-LAST:event_SwitchAvaActionPerformed
+     // Fill Tables with proper data
+    @Override
+    public void getData() {
+        String[] table2 = {"RID", "From", "To", "Return Date", "Car", "Cost", "Penalty", "Status"};
+        Tmode2 = new DefaultTableModel(table2, 0);
+        String[] table1 = {"CID", "Name", "Model", "Available", "Cost"};
+        Tmodel = new DefaultTableModel(table1, 0);
+        try {
+            oos.writeObject(new GetAdminData(admin));
+            oos.flush();
+            cars = (ArrayList<Car>) ois.readObject();
+            Object[] rowData = new Object[5];
+            for (int i = 0; i < cars.size(); i++) {
+                rowData[0] = cars.get(i).getCid();
+                rowData[1] = cars.get(i).getName();
+                rowData[2] = cars.get(i).getModel();
+                rowData[3] = cars.get(i).isAvailable();
+                rowData[4] = cars.get(i).getCost();
+                Tmodel.addRow(rowData);
+            }
+            jTable1.setModel(Tmodel);
+            //================================================================================
+            myRes = (ArrayList<Reservation>) ois.readObject();
+            Object[] rowData1 = new Object[8];
+            for (int i = 0; i < myRes.size(); i++) {
+                rowData1[0] = myRes.get(i).getRid();
+                rowData1[1] = myRes.get(i).getFrom();
+                rowData1[2] = myRes.get(i).getTo();
+                rowData1[3] = myRes.get(i).getReturndate();
+                rowData1[4] = myRes.get(i).getCar();
+                rowData1[5] = myRes.get(i).getCost();
+                rowData1[6] = myRes.get(i).getAdditionalCost();
+                rowData1[7] = myRes.get(i).getStatus();
+                Tmode2.addRow(rowData1);
+            }
+            jTable2.setModel(Tmode2);
+            //=================================================================================
+            Tmode3 = new DefaultTableModel(table2, 0);
+            myResHandOver = (ArrayList<Reservation>) ois.readObject();
+            Object[] rowData2 = new Object[8];
+            for (int i = 0; i < myResHandOver.size(); i++) {
 
+                rowData1[0] = myResHandOver.get(i).getRid();
+                rowData2[1] = myResHandOver.get(i).getFrom();
+                rowData2[2] = myResHandOver.get(i).getTo();
+                rowData2[3] = myResHandOver.get(i).getReturndate();
+                rowData2[4] = myResHandOver.get(i).getCar();
+                rowData2[5] = myResHandOver.get(i).getCost();
+                rowData2[6] = myResHandOver.get(i).getAdditionalCost();
+                rowData2[7] = myResHandOver.get(i).getStatus();
+                Tmode3.addRow(rowData2);
+
+            }
+            jTable3.setModel(Tmode3);
+
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger("AdminLogger").log(Level.SEVERE, "Error in Displaying data\n", e.toString());
+        }
+    }
     /**
      * @param args the command line arguments
      */
@@ -256,7 +314,6 @@ public class AdminForm extends javax.swing.JFrame implements RetrieveData {
             java.util.logging.Logger.getLogger(AdminForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -280,67 +337,5 @@ public class AdminForm extends javax.swing.JFrame implements RetrieveData {
     private javax.swing.JTable jTable2;
     private javax.swing.JTable jTable3;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public void getData() {
-      String[] table2 = {"RID", "From", "To", "Return Date", "Car", "Cost", "Penalty", "Status"};
-        Tmode2 = new DefaultTableModel(table2 , 0);
-        String[] table1 = {"CID","Name","Model","Available","Cost"};
-        Tmodel = new DefaultTableModel(table1 , 0);
-        try{
-        oos.writeObject(new GetAdminData(admin));
-        oos.flush();
-        cars = (ArrayList<Car>) ois.readObject();
-        Object[] rowData = new Object[5];
-            for (int i = 0; i < cars.size(); i++) {
-                rowData[0] = cars.get(i).getCid();
-                rowData[1] = cars.get(i).getName();
-                rowData[2] = cars.get(i).getModel();
-                rowData[3] = cars.get(i).isAvailable();
-                rowData[4] = cars.get(i).getCost();
-                Tmodel.addRow(rowData); 
-            }
-            jTable1.setModel(Tmodel);
-            //================================================================================
-            myRes = (ArrayList<Reservation>) ois.readObject();
-            Object[] rowData1 = new Object[8];
-            for (int i = 0; i < myRes.size(); i++) {
-                rowData1[0] = myRes.get(i).getRid();
-                rowData1[1] = myRes.get(i).getFrom();
-                rowData1[2] = myRes.get(i).getTo();
-                rowData1[3] = myRes.get(i).getReturndate();
-                rowData1[4] = myRes.get(i).getCar();
-                rowData1[5] = myRes.get(i).getCost();
-                rowData1[6] = myRes.get(i).getAdditionalCost();
-                rowData1[7] = myRes.get(i).getStatus();
-                Tmode2.addRow(rowData1);
-            }
-            jTable2.setModel(Tmode2);
-            //=================================================================================
-            Tmode3 = new DefaultTableModel(table2,0);
-            myResHandOver = (ArrayList<Reservation>) ois.readObject();
-            Object[] rowData2= new Object[8];
-            for (int i = 0; i < myResHandOver.size(); i++) {
-                
-                rowData1[0] = myResHandOver.get(i).getRid();
-                rowData2[1] = myResHandOver.get(i).getFrom();
-                rowData2[2] = myResHandOver.get(i).getTo();
-                rowData2[3] = myResHandOver.get(i).getReturndate();
-                rowData2[4] = myResHandOver.get(i).getCar();
-                rowData2[5] = myResHandOver.get(i).getCost();
-                rowData2[6] = myResHandOver.get(i).getAdditionalCost();
-                rowData2[7] = myResHandOver.get(i).getStatus();
-                Tmode3.addRow(rowData2);
-               
-            }
-            jTable3.setModel(Tmode3);
-            
-            
-        }
-        catch(IOException | ClassNotFoundException e){
-            Logger.getLogger("AdminLogger").log(Level.SEVERE,"Error in Displaying data\n",e.toString());
-                
-                }
-                
-    }
+   
 }
