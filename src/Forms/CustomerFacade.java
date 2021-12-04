@@ -8,6 +8,7 @@ package Forms;
 import CRSClasses.*;
 import CRSClasses.Commands.*;
 import java.io.*;
+import java.sql.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -44,6 +45,10 @@ public class CustomerFacade {
                         return result;
             // For initiating handover from customer
             } else if (type.equalsIgnoreCase("handover")) {
+                Date current = new Date(System.currentTimeMillis());
+                if (current.before(res.getFrom())){
+                    return "Cannot Deliver A Car which reservation's date has not begun";
+                }
                 double extra_cost = res.calcPenalty(); // Calculate late penalty
                 if (extra_cost > 0) { // if there is a penalty cost
                     int choice = JOptionPane.showConfirmDialog(JOptionPane.getRootFrame(), "You are late on your car return, you will have to pay extra:" + extra_cost + "To resume handover.");

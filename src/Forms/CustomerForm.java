@@ -224,7 +224,7 @@ public class CustomerForm extends javax.swing.JFrame implements RetrieveData {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void RefreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RefreshButtonActionPerformed
         // TODO add your handling code here:
         getData();
@@ -247,15 +247,21 @@ public class CustomerForm extends javax.swing.JFrame implements RetrieveData {
     // Creates A Reservation
     private void MakeResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MakeResButtonActionPerformed
         // Get User Input from textboxes and a car from the list
-        Date from = Date.valueOf(FromText.getText());
-        Date to = Date.valueOf(ToText.getText());
-        Car car = cars.get(jList1.getSelectedIndex());
-        // Create A New Reservation Object
-        Reservation Res = new Reservation(car, customer, from, to, Reservation.calcCost(car, from, to));
-        // Pass The Reservation to the facade object to send request to server
-        String result = handler.handle("MakeNew", Res);
-        JOptionPane.showMessageDialog(rootPane, result);
-        getData();
+        try {
+            Date from = Date.valueOf(FromText.getText());
+            Date to = Date.valueOf(ToText.getText());
+            Car car = cars.get(jList1.getSelectedIndex());
+            // Create A New Reservation Object
+            Reservation Res = new Reservation(car, customer, from, to, Reservation.calcCost(car, from, to));
+            // Pass The Reservation to the facade object to send request to server
+            String result = handler.handle("MakeNew", Res);
+            JOptionPane.showMessageDialog(rootPane, result);
+            getData();
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Choose a car from the car list", "ERROR", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Enter a Valid Date (Format = YYYY-MM-DD)", "ERROR!", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_MakeResButtonActionPerformed
     // Cancel A Reservation
     private void CancelResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CancelResButtonActionPerformed
@@ -274,7 +280,8 @@ public class CustomerForm extends javax.swing.JFrame implements RetrieveData {
         // Check for reservation status (must be activated to initiate handover)
         if (Res.getStatus().equalsIgnoreCase("ACTIVATED")) {
             // pass reservation to facade handler to send handover initiation request to server
-            handler.handle("handover", Res);
+            String result = handler.handle("handover", Res);
+            JOptionPane.showMessageDialog(rootPane, result);
             getData();
         } else {
             JOptionPane.showMessageDialog(rootPane, "You didnt choose an ACTIVATED Reservation.");
@@ -296,6 +303,7 @@ public class CustomerForm extends javax.swing.JFrame implements RetrieveData {
                 Lmodel.addElement(cars.get(i));
             }
             Object[] rowData = new Object[8];
+            // Fill table rows
             for (int i = 0; i < myRes.size(); i++) {
                 rowData[0] = myRes.get(i).getRid();
                 rowData[1] = myRes.get(i).getFrom();
