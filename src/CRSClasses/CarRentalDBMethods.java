@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class CarRentalDBMethods {
 
-    public static double getCustCredit(Connection c,String id) {
+    public static double getCustCredit(Connection c, String id) {
         PreparedStatement ps;
         ResultSet rs;
         try {
@@ -32,7 +32,7 @@ public class CarRentalDBMethods {
             return -10000.0;
         }
     }
-    
+
     public static Customer getCust(Connection c, String searchid) {
         PreparedStatement ps;
         ResultSet rs;
@@ -69,7 +69,7 @@ public class CarRentalDBMethods {
                 boolean available = rs.getBoolean(4);
                 double cost = rs.getDouble(5);
                 Car car;
-                car = new Car(cid, name, model, available, cost);    
+                car = new Car(cid, name, model, available, cost);
                 allcars.add(car);
             }
             return allcars;
@@ -93,7 +93,7 @@ public class CarRentalDBMethods {
                 boolean available = rs.getBoolean(4);
                 double cost = rs.getDouble(5);
                 Car car;
-                car = new Car(cid, name, model, available, cost);    
+                car = new Car(cid, name, model, available, cost);
                 cars.add(car);
             }
         } catch (SQLException e) {
@@ -124,7 +124,7 @@ public class CarRentalDBMethods {
                 double AdditionalCost = rs.getDouble(9);
                 Car car = Car.search(carid, allcars);
                 Customer cust = Customer.search(ssn, allcust);
-                allres.add(new Reservation(rid, car, cust, from, to, returnD, state, cost,AdditionalCost));
+                allres.add(new Reservation(rid, car, cust, from, to, returnD, state, cost, AdditionalCost));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -154,7 +154,7 @@ public class CarRentalDBMethods {
                 double AdditionalCost = rs.getDouble(9);
                 Car car = Car.search(carid, allcars);
                 Customer cust = Customer.search(ssn, allcust);
-                allres.add(new Reservation(rid, car, cust, from, to, returnD, state, cost,AdditionalCost));
+                allres.add(new Reservation(rid, car, cust, from, to, returnD, state, cost, AdditionalCost));
             }
         } catch (SQLException e) {
             System.out.println(e);
@@ -184,7 +184,7 @@ public class CarRentalDBMethods {
                 double AdditionalCost = rs.getDouble(9);
                 Car car = Car.search(carid, allcars);
                 Customer cust = Customer.search(ssn, allcust);
-                allres.add(new Reservation(rid, car, cust, from, to, returnD, state, cost,AdditionalCost));
+                allres.add(new Reservation(rid, car, cust, from, to, returnD, state, cost, AdditionalCost));
             }
         } catch (SQLException e) {
             System.out.println(e);
@@ -237,7 +237,7 @@ public class CarRentalDBMethods {
                 double cost = rs.getDouble(8);
                 double AdditionalCost = rs.getDouble(9);
                 Car car = Car.search(carid, allcars);
-                Reservation res = new Reservation(rid, car, cust, from, to, returnD, state, cost,AdditionalCost);
+                Reservation res = new Reservation(rid, car, cust, from, to, returnD, state, cost, AdditionalCost);
                 CustRes.add(res);
             }
         } catch (SQLException e) {
@@ -368,12 +368,16 @@ public class CarRentalDBMethods {
         }
     }
 
-    public static void updateCredit(Connection c, Customer cust) {
+    public static void updateCredit(Connection c, Reservation Res, boolean AddCost) {
         PreparedStatement ps;
         try {
-            ps = c.prepareStatement("update user set credit = ? where id=?");
-            ps.setDouble(1, cust.getCredit());
-            ps.setString(2, cust.getId());
+            ps = c.prepareStatement("update user set credit = credit - ? where id=?");
+            if (!AddCost) { // if it is calculating new reservation cost
+                ps.setDouble(1, Res.getCost());
+            } else { // if it is calculating additional cost
+                ps.setDouble(1, Res.getAdditionalCost());
+            }
+            ps.setString(2, Res.getCus().getId());
             ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(CarRentalDBMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -400,15 +404,16 @@ public class CarRentalDBMethods {
         try {
             ps = c.prepareStatement("update reservation set status='Canceled' where id=?");
             ps.setString(1, res.getRid());
-            ps.execute();            
+            ps.execute();
             ps = c.prepareStatement("update user set credit = credit + ? where id=?");
             ps.setDouble(1, res.getCost());
             ps.setString(2, res.getCus().getId());
-            ps.execute();            
+            ps.execute();
         } catch (SQLException ex) {
             Logger.getLogger(CarRentalDBMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
     // Used by the customer and admin
     public static void Handover(Connection c, Reservation R) {
         PreparedStatement ps;
@@ -424,8 +429,7 @@ public class CarRentalDBMethods {
                 ps.setString(3, R.getRid());
                 ps.executeUpdate();
                 if (R.getReturndate().after(R.getTo())) {
-                    R.getCus().setCredit(R.getCus().getCredit() - R.calcPenalty());
-                    updateCredit(c, R.getCus());
+                    updateCredit(c, R,true);
                 }
             }
         } catch (SQLException ex) {

@@ -38,7 +38,7 @@ public class MakeReservation implements Command {
                     if (check.equalsIgnoreCase("ok")) {
                         if (Res.getCus().getCredit() >= Res.getCost()) {
                             Res.getCus().setCredit(Res.getCus().getCredit() - Res.getCost());
-                            CarRentalDBMethods.updateCredit(c, Res.getCus());
+                            CarRentalDBMethods.updateCredit(c, Res, false);
                             oos.writeUTF(check);
                             Res.setStatus("ACTIVATED");
                             CarRentalDBMethods.addRes(c, Res);
