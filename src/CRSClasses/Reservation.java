@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
  *
  * @author hammo
  */
-public class Reservation implements ReservationPrototype,Serializable {
+public class Reservation implements Serializable {
 
     private String rid;
     private Car car;
@@ -134,12 +134,6 @@ public class Reservation implements ReservationPrototype,Serializable {
         return "OK";
     }
 
-    public double calcChangeCost(Date from, Date to) {
-        double d = 0;
-        d = this.getCost() + (to.getTime() - from.getTime() / (1000 * 60 * 60 * 24) % 365) * 70;
-        return d;
-    }
-
     public static double calcCost(Car c, Date from, Date to) {
         double diff = to.getTime() - from.getTime();
         diff = TimeUnit.DAYS.convert((long) diff,TimeUnit.MILLISECONDS);
@@ -162,15 +156,16 @@ public class Reservation implements ReservationPrototype,Serializable {
         this.Status = Active;
     }
 
-    @Override
-    public Reservation cloneRes() {
-        try {
-            return (Reservation) super.clone();
-        } catch (CloneNotSupportedException ex) {
-            Logger.getLogger(Reservation.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-    }
+//    @Override
+//    public Reservation cloneRes() {
+//        try {
+//            return (Reservation) super.clone();
+//        } catch (CloneNotSupportedException ex) {
+//            Logger.getLogger(Reservation.class.getName()).log(Level.SEVERE, null, ex);
+//            return null;
+//        }
+//    }
+// Disabled the use of prototype cloning due to the problems that arised from interacting with cloned objects
 
     public double getAdditionalCost() {
         return AdditionalCost;
