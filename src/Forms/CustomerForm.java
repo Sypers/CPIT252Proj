@@ -267,7 +267,7 @@ public class CustomerForm extends javax.swing.JFrame implements RetrieveData {
     private void CancelResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CancelResButtonActionPerformed
 
         // Get Reservation from the table
-        Reservation Res = myRes.get(jTable1.getSelectedRow()).cloneRes();
+        Reservation Res = myRes.get(jTable1.getSelectedRow());
         // Pass Reservation to Facade handler to send cancel request to server
         String result = handler.handle("cancel", Res);
         JOptionPane.showMessageDialog(rootPane, result, "Result", JOptionPane.INFORMATION_MESSAGE);
@@ -276,7 +276,7 @@ public class CustomerForm extends javax.swing.JFrame implements RetrieveData {
     // Initiate Car Handover from customer
     private void DeliverCarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeliverCarButtonActionPerformed
         // Get Reservation from the table
-        Reservation Res = myRes.get(jTable1.getSelectedRow()).cloneRes();
+        Reservation Res = myRes.get(jTable1.getSelectedRow());
         // Check for reservation status (must be activated to initiate handover)
         if (Res.getStatus().equalsIgnoreCase("ACTIVATED")) {
             // pass reservation to facade handler to send handover initiation request to server

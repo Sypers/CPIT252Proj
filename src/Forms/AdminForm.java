@@ -214,7 +214,7 @@ public class AdminForm extends javax.swing.JFrame implements RetrieveData {
     // Continue handover from admin side
     private void ConfirmDeliveryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ConfirmDeliveryActionPerformed
         try {
-            oos.writeObject(new ConfirmDelivery(myResHandOver.get(jTable3.getSelectedRow()).cloneRes()));
+            oos.writeObject(new ConfirmDelivery(myResHandOver.get(jTable3.getSelectedRow())));
         } catch (Exception e) {
             Logger.getLogger("AdminLogger").log(Level.SEVERE, "Error in Confirm Delivery data\n", e.toString());
         }
