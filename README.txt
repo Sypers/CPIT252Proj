@@ -1,5 +1,9 @@
 # CPIT252Proj
 A Project containing all the work for the cpit252 project
+Made By:
+Ahmad Alahmari, 1937468
+Talal Al-ghamdi, 1846222
+Section HI
 This is a car rental system that is used by two users: admin, and customer
 The Customer can make new car reservations, cancel reservations, handover car, calculate reservation cost
 The Admin can control car availability to the customer, and complete car handover operation by the customer
