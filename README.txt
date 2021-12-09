@@ -17,3 +17,6 @@ Instructions:
 User Info
 Admin: mohammeda@crs.com | Pass: moh1234
 Customer: khaled@gmail.com | Pass: abc123
+Notes:
+1- Prototype in Reservation class was disabled and not used because of data inconsistency with deep cloning
+2- The master branch is Contains the main Car Rental System, while the CRSClasses branch contains components and classes for the system.
